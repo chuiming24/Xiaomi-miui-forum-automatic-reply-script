@@ -3,6 +3,7 @@ import urllib.request
 import urllib
 import urllib.parse
 import re,time,random,json
+import requests
 import sys 
 from io import BytesIO
 import gzip
@@ -12,7 +13,12 @@ non_bmp_map = dict.fromkeys(range(0x10000, sys.maxunicode + 1), 0xfffd)
 
 
 def getCookie():
-    cookie2='UM_distinctid=1644a48677e3ab-0a63c5ae5a0fa2-47e1039-144000-1644a486780c5; Hm_lvt_3c5ef0d4b3098aba138e8ff4e86f1329=1530254617; __utma=230417408.2014906079.1530254617.1530254617.1530254617.1; __utmc=230417408; __utmz=230417408.1530254617.1.1.utmcsr=(direct)|utmccn=(direct)|utmcmd=(none); CNZZDATA2441309=cnzz_eid%3D66192522-1530251409-%26ntime%3D1530253017; CNZZDATA30049650=cnzz_eid%3D476563402-1530252556-%26ntime%3D1530252556; CNZZDATA5557939=cnzz_eid%3D1068010546-1530253769-%26ntime%3D1530253769; __utmt=1; MIUI_2132_saltkey=eUdkPmJj; MIUI_2132_lastvisit=1530252103; MIUI_2132_forum_lastvisit=D_705_1530255703; MIUI_2132_visitedfid=705; MIUI_2132_sendmail=1; Hm_lpvt_3c5ef0d4b3098aba138e8ff4e86f1329=1530255694; __utmb=230417408.15.10.1530254617; MIUI_2132_ulastactivity=b307xWm4FisdinBCRgVKGy53DalsyoIy2yNC%2FN0zHppyIoQji5JtiYU; MIUI_2132_auth=6a06csI6ouiY9fCz9nLZcvBBIUd1ZjiVGWpFCuiascD2%2FgQwDPMG7Wk; lastLoginTime=330fHp05aBh5dKLUXog5IWkFUk%2BOOvWM1oHiHk%2B5X%2BTc4YOIBccY'
+    cookie1=''
+
+    #cookie填写在此处
+    cookie2 = ''
+	
+	
     if(random.random()*2>1):
         print("cookie2")
         return cookie2
@@ -49,8 +55,7 @@ def reply(purl,ptext,fh):
     },data = postdata,
     )
     
-    #oper = urllib.request.urlopen(req,timeout=3000)
-    #print (oper)
+
     with urllib.request.urlopen(req,timeout=3000) as oper:
         data = oper.read()
     print(data.decode("utf-8"))
@@ -58,37 +63,33 @@ def reply(purl,ptext,fh):
     if m==[]:
         raise RuntimeError('postFail')
 
-    #m = re.findall('<input type="hidden" name="formhash" value="(.*?)" />', data.decode('utf-8'))
-    #print(m)
-    #fh=m[0]+':'+m[0][::-1]
-    #print(fh)
+
 
 def gethtml(url):
     
     cookie=getCookie()
-    req = urllib.request.Request(url, headers = {
+    #把cookie字符串处理成字典，以便接下来使用
+    cookies = {}
+    for line in cookie.split(';'):
+        key, value = line.split('=', 1)
+        cookies[key] = value
+    #设置请求头
+    headers = {
         'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
         'Accept-Encoding':'gzip, deflate',
         'Accept-Language':'zh-CN,zh;q=0.9,zh-TW;q=0.8,en-US;q=0.7,en;q=0.6',
         'Cache-Control':'max-age=0',
         'Connection':'keep-alive',
-        'Cookie':cookie,
         'DNT':'1',
         'Host':'www.miui.com',
         'Referer':'http://www.miui.com/forum-705-1.html',
         'Upgrade-Insecure-Requests':'1',
         'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.108 Safari/537.36',
         
-    },
-    )
-    #oper = urllib.request.urlopen(req,timeout=3000)
-    with urllib.request.urlopen(req,timeout=3000) as oper:
-        print(oper.getcode())
-        data = oper.read()
-        #buff = BytesIO(data)
-        #data = gzip.GzipFile(fileobj=buff).read()
-    #print(data)
-    return(data.decode("utf-8").translate(non_bmp_map))
+    }
+    #在发送get请求时带上请求头和cookies
+    resp = requests.get(url, headers = headers, cookies = cookies)
+    return(resp.content.decode('utf-8'))
 
 def main():
 

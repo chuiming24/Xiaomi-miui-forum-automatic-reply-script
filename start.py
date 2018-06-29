@@ -1,6 +1,12 @@
 import post,time
+import re,time,random,json
 
 t=0
+
+listurl="http://www.miui.com/forum-705-"+str(int(random.random()*9)+2)+".html"
+listhtml=(post.gethtml(listurl))
+print(listhtml)
+
 #post.main()
 wait=161
 errmax=900
